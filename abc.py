@@ -2,6 +2,7 @@ from lxml import html
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
 import csv
+import time
 
 
 response = webdriver.Chrome()
@@ -30,6 +31,25 @@ with open("Ouput_Username.csv", errors='ignore') as csvfile:
             vendor.select_by_visible_text(row[136])
             category ="//label[text()[contains(.,'{}')]]".format(row[1])
             response.find_elements_by_xpath(category)[0].click()
+            img1 = response.find_elements_by_xpath("//input[@id='knawatfibu_url']")
+            img1[0].send_keys(row[36])
+            response.find_elements_by_xpath("//a[@id='knawatfibu_preview']")[0].click()
+            j=0
+            idx = 0
+            while(row[37+j] and j<99):
+                if(j==1):
+                    idx = j+2
+                    imgpath = "//input[@id='knawatfibu_url{}']".format(idx)
+                else:
+                    idx = idx+1
+                    imgpath = "//input[@id='knawatfibu_url{}']".format(idx)
+                time.sleep(0.6)
+                response.find_elements_by_xpath(imgpath)[0].send_keys(row[37+j])
+                prevPath = "//a[@id='knawatfibu_preview{}']".format(idx)
+                response.find_elements_by_xpath(prevPath)[0].click()
+                j+=1
+            price = response.find_elements_by_xpath("//input[@id='_regular_price']")
+            price[0].send_keys(row[15].lstrip("$€£"))
             break
         i+=1
         #break
