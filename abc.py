@@ -23,7 +23,7 @@ with open("Ouput_Username.csv", errors='ignore') as csvfile:
     readCSV = csv.reader(csvfile, delimiter=",")
     productType = "simple"
     accData = list(readCSV)
-    startFrom = 43
+    startFrom = 43   # Start from which row
     i = startFrom
     for row in accData[startFrom:]:
         productType = "simple"
@@ -41,8 +41,10 @@ with open("Ouput_Username.csv", errors='ignore') as csvfile:
         response.find_elements_by_xpath(category)[0].click()
         img1 = response.find_elements_by_xpath("//input[@id='knawatfibu_url']")
         img1[0].send_keys(row[36])
-        time.sleep(1.5)
         response.find_elements_by_xpath("//a[@id='knawatfibu_preview']")[0].click()
+        response.implicitly_wait(0)
+        mustWait = WebDriverWait(response,10).until(EC.presence_of_element_located((By.XPATH,"//img[@id='knawatfibu_img' and contains(@style,'display: inline')]")))
+        response.implicitly_wait(20)
         j=0
         idx = 0
         while(row[37+j] and j<99):
@@ -66,9 +68,11 @@ with open("Ouput_Username.csv", errors='ignore') as csvfile:
             attrAdded = 0
             k=3
             while(row[k]):
-                foo = input()
-                response.find_elements_by_xpath("//button[@class='button add_attribute']")[0].click()
-                dropDownName = response.find_elements_by_xpath("//input[@class='attribute_name']")
+                #foo = input()
+                response.find_elements_by_xpath("/html[1]/body[1]/div[1]/div[2]/div[2]/div[1]/div[5]/form[1]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[5]/div[1]/button[1]")[0].click()
+                #response.find_elements_by_xpath("//button[@class='button add_attribute']")[0].click()
+                time.sleep(3)
+                dropDownName = response.find_elements_by_xpath("//input[@name='attribute_names[{}]']".format(attrAdded))
                 print(row[k])
                 #mustWait = WebDriverWait(response,10).until(EC.presence_of_element_located((By.XPATH,"//textarea[@name='attribute_values[{}]']".format(attrAdded))))
                 dropDownName[0].send_keys(row[k])
@@ -83,8 +87,7 @@ with open("Ouput_Username.csv", errors='ignore') as csvfile:
                 response.find_element_by_xpath("//button[@class='button save_attributes button-primary']").click()
                 attrAdded += 1
                 k += 2
-
-
+                time.sleep(5)
         break                                    
     i+=1
     #break
