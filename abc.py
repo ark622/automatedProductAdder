@@ -68,26 +68,116 @@ with open("Ouput_Username.csv", errors='ignore') as csvfile:
             attrAdded = 0
             k=3
             while(row[k]):
-                #foo = input()
-                response.find_elements_by_xpath("/html[1]/body[1]/div[1]/div[2]/div[2]/div[1]/div[5]/form[1]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[5]/div[1]/button[1]")[0].click()
+                success = 0
+                while(success == 0):
+                    try:
+                        response.find_elements_by_xpath("/html[1]/body[1]/div[1]/div[2]/div[2]/div[1]/div[5]/form[1]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[5]/div[1]/button[1]")[0].click()
+                        success = 1
+                    except:
+                        response.implicitly_wait(0)
+                        weWait = WebDriverWait(response, 10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[1]/div[2]/div[2]/div[1]/div[5]/form[1]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[5]/div[1]/button[1]")))
+                        response.implicitly_wait(20)
+                        success = 0
+                k += 2
+            k=3
+            while(row[k]):
                 #response.find_elements_by_xpath("//button[@class='button add_attribute']")[0].click()
-                time.sleep(3)
-                dropDownName = response.find_elements_by_xpath("//input[@name='attribute_names[{}]']".format(attrAdded))
-                print(row[k])
-                #mustWait = WebDriverWait(response,10).until(EC.presence_of_element_located((By.XPATH,"//textarea[@name='attribute_values[{}]']".format(attrAdded))))
-                dropDownName[0].send_keys(row[k])
-                choices = response.find_elements_by_xpath("//textarea[@name='attribute_values[{}]']".format(attrAdded))
+                #time.sleep(3)
+                success = 0
+                while(success == 0):
+                    try:
+                        dropDownName = response.find_elements_by_xpath("//input[@name='attribute_names[{}]']".format(attrAdded))
+                        print(row[k])
+                        dropDownName[0].send_keys(row[k])
+                        success = 1
+                    except:
+                        response.implicitly_wait(0)
+                        weWait = WebDriverWait(response, 10).until(EC.element_to_be_clickable((By.XPATH, "//input[@name='attribute_names[{}]']".format(attrAdded))))
+                        response.implicitly_wait(20)
+                        success = 0
                 options = ""
                 l = i
                 while(accData[l][2] == row[2]):
                     options = options + "|" + accData[l][k+1]
                     l += 1
-                choices[0].send_keys(options)
-                response.find_element_by_xpath("//input[@name='attribute_variation[{}]']".format(attrAdded)).click()
-                response.find_element_by_xpath("//button[@class='button save_attributes button-primary']").click()
+                success = 0
+                while(success == 0):
+                    try:
+                        choices = response.find_elements_by_xpath("//textarea[@name='attribute_values[{}]']".format(attrAdded))
+                        choices[0].send_keys(options)
+                        success = 1
+                    except:
+                        response.implicitly_wait(0)
+                        weWait = WebDriverWait(response, 10).until(EC.element_to_be_clickable((By.XPATH, "//textarea[@name='attribute_values[{}]']".format(attrAdded))))
+                        response.implicitly_wait(20)
+                        success = 0
+                success = 0
+                while(success == 0):
+                    try:
+                        response.find_element_by_xpath("//input[@name='attribute_variation[{}]']".format(attrAdded)).click()
+                        success = 1
+                    except:
+                        response.implicitly_wait(0)
+                        weWait = WebDriverWait(response, 10).until(EC.element_to_be_clickable((By.XPATH, "//input[@name='attribute_variation[{}]']".format(attrAdded))))
+                        response.implicitly_wait(20)
+                        success = 0
                 attrAdded += 1
                 k += 2
-                time.sleep(5)
+                #time.sleep(10)
+            success = 0
+            while(success == 0):
+                try:
+                    response.find_element_by_xpath("//button[@class='button save_attributes button-primary']").click()
+                    success = 1
+                except:
+                    response.implicitly_wait(0)
+                    weWait = WebDriverWait(response, 10).until(EC.element_to_be_clickable((By.XPATH, "//button[@class='button save_attributes button-primary']")))
+                    response.implicitly_wait(20)
+                    success = 0
+            success = 0
+            while(success == 0):
+                try:
+                    response.find_elements_by_xpath("//li[@class='variations_options variations_tab variations_tab show_if_variable']//a")[0].click()
+                    success = 1
+                except:
+                    response.implicitly_wait(0)
+                    weWait = WebDriverWait(response, 10).until(EC.element_to_be_clickable((By.XPATH, "//li[@class='variations_options variations_tab variations_tab show_if_variable']//a")))
+                    response.implicitly_wait(20)
+                    success = 0
+            success = 0
+            while(success == 0):
+                try:
+                    variant = Select(response.find_element_by_xpath("//select[@id='field_to_edit']"))
+                    variant.select_by_value("link_all_variations")
+                    success = 1
+                except:
+                    response.implicitly_wait(0)
+                    weWait = WebDriverWait(response, 10).until(EC.element_to_be_clickable((By.XPATH, "//select[@id='field_to_edit']")))
+                    response.implicitly_wait(20)
+                    success = 0
+            success = 0
+            while(success == 0):
+                try:
+                    response.find_element_by_xpath("//a[@class='button bulk_edit do_variation_action']").click()
+                    success = 1
+                except:
+                    response.implicitly_wait(0)
+                    weWait = WebDriverWait(response, 10).until(EC.element_to_be_clickable((By.XPATH, "//a[@class='button bulk_edit do_variation_action']")))
+                    response.implicitly_wait(20)
+                    success = 0
+            alert = response.switch_to.alert
+            alert.accept()
+            success = 0
+            while(success == 0):
+                try:
+                    alert = response.switch_to.alert
+                    success = 1
+                except:
+                    response.implicitly_wait(0)
+                    weWait = WebDriverWait(response, 10).until(EC.alert_is_present())
+                    response.implicitly_wait(20)
+                    success = 0
+            alert.accept()
         break                                    
     i+=1
     #break
