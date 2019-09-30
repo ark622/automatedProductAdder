@@ -1,4 +1,3 @@
-from lxml import html
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
@@ -23,11 +22,11 @@ with open("Ouput_Username.csv", errors='ignore') as csvfile:
     readCSV = csv.reader(csvfile, delimiter=",")
     productType = "simple"
     accData = list(readCSV)
-    startFrom = 3   # Start from which row
+    startFrom = 1   # Start from which row
     i = startFrom
     noOfSkips = 0
     productAdded = 0
-    for row in accData[startFrom:16]:
+    for row in accData[startFrom:]:
         if(noOfSkips!=0):
             noOfSkips -= 1
             i += 1
@@ -43,7 +42,7 @@ with open("Ouput_Username.csv", errors='ignore') as csvfile:
         description[0].send_keys(desc)
         vendor = Select(response.find_element_by_xpath("//select[@id='dokan_product_author_override']"))
         vendor.select_by_visible_text(row[136])
-        category ="//label[text()[contains(.,'{}')]]".format(row[1])
+        category ="//label[contains(text(),'{}')]".format(row[1])
         response.find_elements_by_xpath(category)[0].click()
         img1 = response.find_elements_by_xpath("//input[@id='knawatfibu_url']")
         img1[0].send_keys(row[36])
