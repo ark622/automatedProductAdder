@@ -9,16 +9,16 @@ import time
 
 response = webdriver.Chrome()
 response.implicitly_wait(20)
-response.get("http://lucky-coyote.w6.wpsandbox.pro/wp-admin/post-new.php?post_type=product")
-username = "arehman622"
-password = "arehman622"
+response.get("http://sebuys.com/loginvig")
+username = "script"
+password = "script"
 user = response.find_elements_by_xpath("//input[@id='user_login']")
 passw = response.find_elements_by_xpath("//input[@id='user_pass']")
 login = response.find_elements_by_xpath("//input[@id='wp-submit']")
 user[0].send_keys(username)
 passw[0].send_keys(password)
 login[0].click()
-with open("dOuput_Username.csv", errors='ignore') as csvfile:
+with open("Ouput_Username.csv", errors='ignore') as csvfile:
     readCSV = csv.DictReader(csvfile)
     productType = "simple"
     accData = list(readCSV)
@@ -26,7 +26,7 @@ with open("dOuput_Username.csv", errors='ignore') as csvfile:
     i = startFrom
     noOfSkips = 0
     productAdded = 0
-    for row in accData[startFrom:]:
+    for row in accData[startFrom:1]:
         if(noOfSkips!=0):
             noOfSkips -= 1
             i += 1
@@ -34,15 +34,20 @@ with open("dOuput_Username.csv", errors='ignore') as csvfile:
         productType = "simple"
         if(accData[i+1]["Title"] == row["Title"]):
             productType = "variation"
-        response.get("http://lucky-coyote.w6.wpsandbox.pro/wp-admin/post-new.php?post_type=product")
+        response.get("https://www.sebuys.com/wp-admin/post-new.php?post_type=product")
         title = response.find_elements_by_xpath("//input[@id='title']")
         title[0].send_keys(row["Title"])
+        response.find_element_by_xpath("//button[@id='content-html']").click()
         desc = '{}\n<div style="overflow: auto;">\n<table class="shop_attributes">\n<tbody>\n<tr>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n</tr>\n<tr>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n</tr>\n<tr>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n</tr>\n</tbody>\n</table>\n</div>'.format(row["Title"],row["Item Specific Label 2"],row["Item Specific Value 2"],row["Item Specific Label 7"],row["Item Specific Value 7"],row["Item Specific Label 8"],row["Item Specific Value 8"],row["Item Specific Label 3"],row["Item Specific Value 3"],row["Item Specific Label 4"],row["Item Specific Value 4"],row["Item Specific Label 9"],row["Item Specific Value 9"],row["Item Specific Label 5"],row["Item Specific Value 5"],row["Item Specific Label 6"],row["Item Specific Value 6"],row["Item Specific Label 10"],row["Item Specific Value 10"])
         description = response.find_elements_by_xpath("//textarea[@id='content']")
         description[0].send_keys(desc)
-        vendor = Select(response.find_element_by_xpath("//select[@id='dokan_product_author_override']"))
-        vendor.select_by_visible_text(row["user"])
+        vendorName = row["user"]
         response.implicitly_wait(0)
+        vendor = response.find_element_by_xpath("//select[@id='dokan_product_author_override']")
+        for vend in vendor.find_elements_by_tag_name('option'):
+            if vendorName.lower() in (vend.text).lower():
+                vend.click()
+                break
         categoryStr = row["Category Name"]
         success = 0
         while(success == 0 and categoryStr):
@@ -54,14 +59,16 @@ with open("dOuput_Username.csv", errors='ignore') as csvfile:
                 categoryStr = categoryStr[:-1]
                 success = 0
         response.implicitly_wait(20)
-        img1 = response.find_elements_by_xpath("//input[@id='knawatfibu_url']")
-        img1[0].send_keys(row["Image 1"])
-        response.find_elements_by_xpath("//a[@id='knawatfibu_preview']")[0].click()
-        response.implicitly_wait(0)
-        mustWait = WebDriverWait(response,10).until(EC.presence_of_element_located((By.XPATH,"//img[@id='knawatfibu_img' and contains(@style,'display: inline')]")))
-        response.implicitly_wait(20)
+        if(row["Image 1"]):
+            img1 = response.find_elements_by_xpath("//input[@id='knawatfibu_url']")
+            img1[0].send_keys(row["Image 1"])
+            response.find_elements_by_xpath("//a[@id='knawatfibu_preview']")[0].click()
+            response.implicitly_wait(0)
+            mustWait = WebDriverWait(response,10).until(EC.presence_of_element_located((By.XPATH,"//img[@id='knawatfibu_img' and contains(@style,'display: inline')]")))
+            response.implicitly_wait(20)
         j=2
         idx = 0
+        """
         while(row["Image {}".format(j)] and j<101):
             if(j==3):
                 idx = j
@@ -73,6 +80,7 @@ with open("dOuput_Username.csv", errors='ignore') as csvfile:
             prevPath = "//a[@id='knawatfibu_preview{}']".format(idx)
             response.find_elements_by_xpath(prevPath)[0].click()
             j+=1
+        """
         if(productType == "simple"):
             price = response.find_elements_by_xpath("//input[@id='_regular_price']")
             price[0].send_keys(row["Price"].lstrip("$€£"))
@@ -86,11 +94,11 @@ with open("dOuput_Username.csv", errors='ignore') as csvfile:
                 success = 0
                 while(success == 0):
                     try:
-                        response.find_elements_by_xpath("/html[1]/body[1]/div[1]/div[2]/div[2]/div[1]/div[5]/form[1]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[5]/div[1]/button[1]")[0].click()
+                        response.find_elements_by_xpath("//button[@class='button add_attribute']")[0].click()
                         success = 1
                     except:
                         response.implicitly_wait(0)
-                        weWait = WebDriverWait(response, 10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[1]/div[2]/div[2]/div[1]/div[5]/form[1]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[5]/div[1]/button[1]")))
+                        weWait = WebDriverWait(response, 10).until(EC.element_to_be_clickable((By.XPATH, "//button[@class='button add_attribute']")))
                         response.implicitly_wait(20)
                         success = 0
                 k += 1
@@ -204,6 +212,7 @@ with open("dOuput_Username.csv", errors='ignore') as csvfile:
                 xpnd.click()
             line = 1
             count1 = 0
+            page = 1
             for x in range(totalrows):
                 if(count1 == 15):
                     count1 = 0
@@ -213,11 +222,11 @@ with open("dOuput_Username.csv", errors='ignore') as csvfile:
                     while(success == 0):
                         try:
                             response.find_element_by_xpath("//div[@id='variable_product_options_inner']//div[@class='toolbar']").click()
-                            response.find_element_by_xpath("/html[1]/body[1]/div[1]/div[2]/div[2]/div[1]/div[5]/form[1]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[7]/div[1]/div[4]/button[1]").click()
+                            response.find_element_by_xpath("//button[@class='button-primary save-variation-changes']").click()
                             success = 1
                         except:
                             response.implicitly_wait(0)
-                            weWait = WebDriverWait(response, 10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[1]/div[2]/div[2]/div[1]/div[5]/form[1]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[7]/div[1]/div[4]/button[1]")))
+                            weWait = WebDriverWait(response, 10).until(EC.element_to_be_clickable((By.XPATH, "//button[@class='button-primary save-variation-changes']")))
                             response.implicitly_wait(20)
                             success = 0
                     response.implicitly_wait(0)
@@ -225,15 +234,24 @@ with open("dOuput_Username.csv", errors='ignore') as csvfile:
                     response.implicitly_wait(20)
                     success = 0
                     time.sleep(3)
-                    while(success == 0):
+                    response.execute_script("window.scrollTo(0, 0)") 
+                    select = Select(response.find_element_by_xpath("//div[@class='toolbar']//select[@id='current-page-selector-1']"))
+                    selected_option = select.first_selected_option
+                    pageNo = selected_option.text
+                    while(success == 0 and int(pageNo)!=page+1):
                         try:
                             response.find_element_by_xpath("//div[@class='toolbar']//a[@class='next-page']").click()
                             success = 1
                         except:
+                            select = Select(response.find_element_by_xpath("//div[@class='toolbar']//select[@id='current-page-selector-1']"))
+                            selected_option = select.first_selected_option
+                            pageNo = selected_option.text
                             response.implicitly_wait(0)
                             weWait = WebDriverWait(response, 10).until(EC.element_to_be_clickable((By.XPATH, "//div[@class='toolbar']//a[@class='next-page']")))
                             response.implicitly_wait(20)
                             success = 0
+                    print(pageNo)
+                    page += 1
                     success = 0
                     while(success == 0):
                         try:
@@ -245,7 +263,7 @@ with open("dOuput_Username.csv", errors='ignore') as csvfile:
                             response.implicitly_wait(20)
                             success = 0
                     time.sleep(4)
-                    response.execute_script("window.scrollTo(0, 0)") 
+                    response.execute_script("window.scrollTo(0, 0)")
                     expands = response.find_elements_by_xpath("//strong[contains(text(),'#')]")
                     success = 0
                     while(success == 0):
@@ -264,7 +282,7 @@ with open("dOuput_Username.csv", errors='ignore') as csvfile:
                         regPrice.send_keys(accData[i+x]["Price"])
                         success = 1
                     except:
-                        response.find_element_by_xpath("/html[1]/body[1]/div[1]/div[2]/div[2]/div[1]/div[5]/form[1]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[7]/div[1]/div[3]/div[{}]/h3[1]/strong[1]".format(line+1)).click()
+                        response.find_element_by_xpath("//div[@id='variable_product_options_inner']//div[@class='toolbar']").click()
                         response.implicitly_wait(0)
                         weWait = WebDriverWait(response, 10).until(EC.element_to_be_clickable((By.XPATH, "//input[@id='variable_regular_price_{}']".format(count1))))
                         response.implicitly_wait(20)
@@ -275,11 +293,11 @@ with open("dOuput_Username.csv", errors='ignore') as csvfile:
             while(success == 0):
                 try:
                     response.find_element_by_xpath("//div[@id='variable_product_options_inner']//div[@class='toolbar']").click()
-                    response.find_element_by_xpath("/html[1]/body[1]/div[1]/div[2]/div[2]/div[1]/div[5]/form[1]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[7]/div[1]/div[4]/button[1]").click()
+                    response.find_element_by_xpath("//button[@class='button-primary save-variation-changes']").click()
                     success = 1
                 except:
                     response.implicitly_wait(0)
-                    weWait = WebDriverWait(response, 10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[1]/div[2]/div[2]/div[1]/div[5]/form[1]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[7]/div[1]/div[4]/button[1]")))
+                    weWait = WebDriverWait(response, 10).until(EC.element_to_be_clickable((By.XPATH, "//button[@class='button-primary save-variation-changes']")))
                     response.implicitly_wait(20)
                     success = 0
             response.implicitly_wait(0)
@@ -290,13 +308,13 @@ with open("dOuput_Username.csv", errors='ignore') as csvfile:
         response.execute_script("window.scrollTo(0, 0)") 
         while(success == 0):
             try:
-                response.find_element_by_xpath("/html[1]/body[1]/div[1]/div[2]/div[2]/div[1]/div[5]/form[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]/input[2]").click()
+                response.find_element_by_xpath("//input[@id='publish']").click()
                 success = 1
             except:
                 response.implicitly_wait(0)
-                weWait = WebDriverWait(response, 10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[1]/div[2]/div[2]/div[1]/div[5]/form[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]/input[2]")))
+                weWait = WebDriverWait(response, 10).until(EC.element_to_be_clickable((By.XPATH, "//input[@id='publish']")))
                 response.implicitly_wait(20)
-                success = 0    
+                success = 0
         productAdded += 1
         print("product(s) added: "+ str(productAdded))
         i+=1
