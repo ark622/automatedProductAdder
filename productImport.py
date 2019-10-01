@@ -18,11 +18,11 @@ login = response.find_elements_by_xpath("//input[@id='wp-submit']")
 user[0].send_keys(username)
 passw[0].send_keys(password)
 login[0].click()
-with open("Ouput_Username.csv", errors='ignore') as csvfile:
-    readCSV = csv.reader(csvfile, delimiter=",")
+with open("dOuput_Username.csv", errors='ignore') as csvfile:
+    readCSV = csv.DictReader(csvfile)
     productType = "simple"
     accData = list(readCSV)
-    startFrom = 1   # Start from which row
+    startFrom = 0   # Start from which row
     i = startFrom
     noOfSkips = 0
     productAdded = 0
@@ -32,47 +32,57 @@ with open("Ouput_Username.csv", errors='ignore') as csvfile:
             i += 1
             continue
         productType = "simple"
-        if(accData[i+1][2] == row[2]):
+        if(accData[i+1]["Title"] == row["Title"]):
             productType = "variation"
         response.get("http://lucky-coyote.w6.wpsandbox.pro/wp-admin/post-new.php?post_type=product")
         title = response.find_elements_by_xpath("//input[@id='title']")
-        title[0].send_keys(row[2])
-        desc = '{}\n<div style="overflow: auto;">\n<table class="shop_attributes">\n<tbody>\n<tr>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n</tr>\n<tr>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n</tr>\n<tr>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n</tr>\n</tbody>\n</table>\n</div>'.format(row[2],row[18],row[19],row[28],row[29],row[30],row[31],row[20],row[21],row[22],row[23],row[32],row[33],row[26],row[27],row[26],row[27],row[34],row[35])
+        title[0].send_keys(row["Title"])
+        desc = '{}\n<div style="overflow: auto;">\n<table class="shop_attributes">\n<tbody>\n<tr>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n</tr>\n<tr>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n</tr>\n<tr>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n<td>{}</td>\n</tr>\n</tbody>\n</table>\n</div>'.format(row["Title"],row["Item Specific Label 2"],row["Item Specific Value 2"],row["Item Specific Label 7"],row["Item Specific Value 7"],row["Item Specific Label 8"],row["Item Specific Value 8"],row["Item Specific Label 3"],row["Item Specific Value 3"],row["Item Specific Label 4"],row["Item Specific Value 4"],row["Item Specific Label 9"],row["Item Specific Value 9"],row["Item Specific Label 5"],row["Item Specific Value 5"],row["Item Specific Label 6"],row["Item Specific Value 6"],row["Item Specific Label 10"],row["Item Specific Value 10"])
         description = response.find_elements_by_xpath("//textarea[@id='content']")
         description[0].send_keys(desc)
         vendor = Select(response.find_element_by_xpath("//select[@id='dokan_product_author_override']"))
-        vendor.select_by_visible_text(row[136])
-        category ="//label[contains(text(),'{}')]".format(row[1])
-        response.find_elements_by_xpath(category)[0].click()
+        vendor.select_by_visible_text(row["user"])
+        response.implicitly_wait(0)
+        categoryStr = row["Category Name"]
+        success = 0
+        while(success == 0 and categoryStr):
+            try:
+                category ="//label[contains(text(),'{}')]".format(categoryStr)
+                response.find_elements_by_xpath(category)[0].click()
+                success = 1
+            except:
+                categoryStr = categoryStr[:-1]
+                success = 0
+        response.implicitly_wait(20)
         img1 = response.find_elements_by_xpath("//input[@id='knawatfibu_url']")
-        img1[0].send_keys(row[36])
+        img1[0].send_keys(row["Image 1"])
         response.find_elements_by_xpath("//a[@id='knawatfibu_preview']")[0].click()
         response.implicitly_wait(0)
         mustWait = WebDriverWait(response,10).until(EC.presence_of_element_located((By.XPATH,"//img[@id='knawatfibu_img' and contains(@style,'display: inline')]")))
         response.implicitly_wait(20)
-        j=0
+        j=2
         idx = 0
-        while(row[37+j] and j<99):
-            if(j==1):
-                idx = j+2
+        while(row["Image {}".format(j)] and j<101):
+            if(j==3):
+                idx = j
                 imgpath = "//input[@id='knawatfibu_url{}']".format(idx)
             else:
                 idx = idx+1
                 imgpath = "//input[@id='knawatfibu_url{}']".format(idx)
-            response.find_elements_by_xpath(imgpath)[0].send_keys(row[37+j])
+            response.find_elements_by_xpath(imgpath)[0].send_keys(row["Image {}".format(j)])
             prevPath = "//a[@id='knawatfibu_preview{}']".format(idx)
             response.find_elements_by_xpath(prevPath)[0].click()
             j+=1
         if(productType == "simple"):
             price = response.find_elements_by_xpath("//input[@id='_regular_price']")
-            price[0].send_keys(row[15].lstrip("$€£"))
+            price[0].send_keys(row["Price"].lstrip("$€£"))
         elif (productType == "variation"):
             prodType = Select(response.find_element_by_xpath("//select[@id='product-type']"))
             prodType.select_by_value("variable")
             response.find_element_by_xpath("//a[@href='#product_attributes']").click()
             attrAdded = 0
-            k=3
-            while(row[k]):
+            k=1
+            while(row["Dropdown Name {}".format(k)]):
                 success = 0
                 while(success == 0):
                     try:
@@ -83,14 +93,14 @@ with open("Ouput_Username.csv", errors='ignore') as csvfile:
                         weWait = WebDriverWait(response, 10).until(EC.element_to_be_clickable((By.XPATH, "/html[1]/body[1]/div[1]/div[2]/div[2]/div[1]/div[5]/form[1]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[5]/div[1]/button[1]")))
                         response.implicitly_wait(20)
                         success = 0
-                k += 2
-            k=3
-            while(row[k]):
+                k += 1
+            k=1
+            while(row["Dropdown Name {}".format(k)]):
                 success = 0
                 while(success == 0):
                     try:
                         dropDownName = response.find_elements_by_xpath("//input[@name='attribute_names[{}]']".format(attrAdded))
-                        dropDownName[0].send_keys(row[k])
+                        dropDownName[0].send_keys(row["Dropdown Name {}".format(k)])
                         success = 1
                     except:
                         response.implicitly_wait(0)
@@ -100,8 +110,8 @@ with open("Ouput_Username.csv", errors='ignore') as csvfile:
                 options = ""
                 totalrows = 0
                 l = i
-                while(accData[l][2] == row[2]):
-                    options = options + "|" + accData[l][k+1]
+                while(accData[l]["Title"] == row["Title"]):
+                    options = options + "|" + accData[l]["Dropdown Option {}".format(k)]
                     l += 1
                     totalrows += 1
                 success = 0
@@ -126,8 +136,7 @@ with open("Ouput_Username.csv", errors='ignore') as csvfile:
                         response.implicitly_wait(20)
                         success = 0
                 attrAdded += 1
-                k += 2
-                #time.sleep(10)
+                k += 1
             success = 0
             while(success == 0):
                 try:
@@ -252,7 +261,7 @@ with open("Ouput_Username.csv", errors='ignore') as csvfile:
                 while(success == 0):
                     try:
                         regPrice = response.find_element_by_xpath("//input[@id='variable_regular_price_{}']".format(count1))
-                        regPrice.send_keys(accData[i+x][15])
+                        regPrice.send_keys(accData[i+x]["Price"])
                         success = 1
                     except:
                         response.find_element_by_xpath("/html[1]/body[1]/div[1]/div[2]/div[2]/div[1]/div[5]/form[1]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[7]/div[1]/div[3]/div[{}]/h3[1]/strong[1]".format(line+1)).click()
