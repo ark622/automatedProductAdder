@@ -18,19 +18,22 @@ login = response.find_elements_by_xpath("//input[@id='wp-submit']")
 user[0].send_keys(username)
 passw[0].send_keys(password)
 login[0].click()
-with open("Ouput_Username.csv", errors='ignore') as csvfile:
+with open("aOuput_Username.csv", errors='ignore') as csvfile:
     readCSV = csv.DictReader(csvfile)
     productType = "simple"
     accData = list(readCSV)
-    startFrom = 0   # Start from which row
+    startFrom = 150   # Start from which row
     i = startFrom
     noOfSkips = 0
     productAdded = 0
-    for row in accData[startFrom:14]:
+    for row in accData[startFrom:]:
         if(row["Category Name"] and row["Title"] and row["Price"] and row["user"]):
             print("row {} is ok".format(i+1))
         else:
             print("row {} is not ok".format(i+1))
+            if(noOfSkips!=0):
+                noOfSkips -= 1
+            i += 1
             continue
         try:
             alert = response.switch_to.alert
@@ -44,8 +47,9 @@ with open("Ouput_Username.csv", errors='ignore') as csvfile:
             continue
         try:
             productType = "simple"
-            if(accData[i+1]["Title"] == row["Title"] and row["Dropdown Name 1"]):
-                productType = "variation"
+            if(i!=len(accData)-1):
+                if(accData[i+1]["Title"] == row["Title"] and row["Dropdown Name 1"]):
+                    productType = "variation"
             response.get("https://www.sebuys.com/wp-admin/post-new.php?post_type=product")
             try:
                 alert = response.switch_to.alert
@@ -76,6 +80,7 @@ with open("Ouput_Username.csv", errors='ignore') as csvfile:
                     categoryStr = categoryStr[:-1]
                     success = 0
             response.implicitly_wait(20)
+            """
             try:
                 if(row["Image 1"]):
                     img1 = response.find_elements_by_xpath("//input[@id='knawatfibu_url']")
@@ -112,6 +117,7 @@ with open("Ouput_Username.csv", errors='ignore') as csvfile:
                         pass
             except:
                 pass
+            """
             if(productType == "simple"):
                 price = response.find_elements_by_xpath("//input[@id='_regular_price']")
                 price[0].send_keys(row["Price"].lstrip("$€£"))
@@ -225,9 +231,11 @@ with open("Ouput_Username.csv", errors='ignore') as csvfile:
                 alert = response.switch_to.alert
                 alert.accept()
                 success = 0
+                varCount = 0
                 while(success == 0):
                     try:
                         alert = response.switch_to.alert
+                        varCount = alert.text
                         success = 1
                     except:
                         response.implicitly_wait(0)
@@ -235,6 +243,7 @@ with open("Ouput_Username.csv", errors='ignore') as csvfile:
                         response.implicitly_wait(20)
                         success = 0
                 alert.accept()
+                varCount = int(varCount.partition(' ')[0])
                 expands = response.find_elements_by_xpath("//strong[contains(text(),'#')]")
                 success = 0
                 while(success == 0):
@@ -249,7 +258,7 @@ with open("Ouput_Username.csv", errors='ignore') as csvfile:
                 line = 1
                 count1 = 0
                 page = 1
-                for x in range(totalrows):
+                for x in range(varCount):
                     if(count1 == 15):
                         count1 = 0
                     if(line == 16):
